@@ -6,11 +6,10 @@
   "type": "module",
   "main": "lib/portal.js",
   "exports": {
-    ".": "./lib/index.js",
+    ".": "./lib/portal.js",
     "./package.json": "./package.json",
     "./locale/*.json": "./locale/*.json",
-    "./icon": "./icon.svg",
-    ".\"": "./lib/portal.js"
+    "./icon": "./icon.svg"
   },
   "files": [
     "lib",
