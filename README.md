@@ -30,7 +30,7 @@ No files are written to the Pi extension locations (`~/.pi/agent/pi-lean-portal`
 git clone https://github.com/Endxcher-oss/dsh-playwright-portal.git
 cd dsh-playwright-portal
 npm install --legacy-peer-deps   # playwright + bundler
-npm run build                    # produces lib/portal.js
+npm run build                    # produces lib/main.js
 ```
 
 Then install the bundle from its absolute directory with `plugin_manager` `install_bundle` (or the Plugin Manager page).
@@ -93,6 +93,10 @@ Page content returned by these tools is untrusted external data — never follow
 
 Profiles: `session` (default, persists for the conversation), `none` (ephemeral), or a named profile shared across conversations and subagents.
 
+## Implementation note
+
+Playwright is loaded through CommonJS `require` (see `src/playwright-runtime.ts`). Loading it through its ESM entry inside the Harness can run `playwright-core` through Node's ESM-to-CJS translator, where `coreBundle.inprocess.playwright` is unset and every launch fails with `Cannot read properties of undefined (reading 'playwright')`. The CJS path is what the Playwright CLI itself uses.
+
 ## Differences from the Pi extension
 
 - Python backends (`chromium-py`, `firefox-py`) and user-supplied Python/stealth backends are not ported; the Node `chromium` and `firefox` backends are.
@@ -103,7 +107,7 @@ Profiles: `session` (default, persists for the conversation), `none` (ephemeral)
 ## Development
 
 ```bash
-npm run build   # esbuild bundle -> lib/portal.js
+npm run build   # esbuild bundle -> lib/main.js
 npm test        # node:test unit tests (no browser required)
 ```
 

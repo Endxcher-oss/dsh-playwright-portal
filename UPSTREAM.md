@@ -16,6 +16,6 @@ The following parts are derivative adaptations of the upstream source:
 - Python backends and the Python adapter were removed; the Node Chromium/Firefox backends are kept.
 - Session-scoped profile naming uses DSH session ids; stale-session pruning checks `$DSH_HOME/sessions`.
 - Toggle state lives in `<dataDir>/state.json` instead of Pi conversation branch history.
-- Playwright is imported lazily so a missing package/browser breaks browser launch, not plugin activation.
+- Playwright is imported lazily through CommonJS `require` so a missing package/browser breaks browser launch, not plugin activation, and the Harness ESM loader cannot break Playwright's in-process initialization.
 
 Upstream files kept close to verbatim: accessibility tree parsing, DOM extraction, bot detection, navigation settling, snapshot compaction/caching, storage-state persistence, guide parsing/matching, Playwright backend base, browser data tables.
