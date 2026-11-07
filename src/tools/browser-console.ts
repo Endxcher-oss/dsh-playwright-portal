@@ -1,6 +1,6 @@
 /** browser-console tool — captured console output or page-side JS evaluation. */
 
-import { defineTool } from "@deepseek-ai/dsh-tools";
+import { defineTool } from "../define-tool.js";
 import * as router from "../core/router.js";
 import { TEXT_OUTPUT, renderText, taskIdOfExecution } from "./common.js";
 

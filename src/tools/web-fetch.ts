@@ -2,7 +2,7 @@
  * web-fetch tool — stateless HTTP fetch rendered as Markdown.
  */
 
-import { defineTool } from "@deepseek-ai/dsh-tools";
+import { defineTool } from "../define-tool.js";
 import { webFetch } from "../core/fetch-backend.js";
 import { getConfig } from "../config.js";
 import { TEXT_OUTPUT, joinLines, renderText, taskIdOfExecution } from "./common.js";

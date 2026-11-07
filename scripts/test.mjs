@@ -12,7 +12,6 @@ await build({
 	format: "esm",
 	target: "node20",
 	outfile: "test/.build/portal.test.js",
-	alias: { "@deepseek-ai/dsh-tools": "./test/stub-dsh-tools.ts" },
 	external: ["playwright"],
 	logLevel: "warning",
 });

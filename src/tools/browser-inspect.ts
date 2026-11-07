@@ -1,6 +1,6 @@
 /** browser-inspect tool — targeted element/text queries without a full snapshot. */
 
-import { defineTool } from "@deepseek-ai/dsh-tools";
+import { defineTool } from "../define-tool.js";
 import * as router from "../core/router.js";
 import { TEXT_OUTPUT, renderText, taskIdOfExecution } from "./common.js";
 

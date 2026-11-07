@@ -2,7 +2,7 @@
  * browser-snapshot tool — refresh the accessibility tree.
  */
 
-import { defineTool } from "@deepseek-ai/dsh-tools";
+import { defineTool } from "../define-tool.js";
 import * as router from "../core/router.js";
 import { getConfig } from "../config.js";
 import { TEXT_OUTPUT, joinLines, renderText, taskIdOfExecution } from "./common.js";

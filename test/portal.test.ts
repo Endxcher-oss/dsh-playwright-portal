@@ -176,6 +176,7 @@ test("all twelve tools keep the upstream names", () => {
 	assert.equal(WEB_TOOL_NAMES.has("web-learn"), false, "learn is gated separately");
 	for (const tool of toolDefinitions) {
 		assert.equal(tool.output.schema.type, "object");
+		assert.deepEqual(tool.output.schema.required, ["text"]);
 		assert.equal(tool.output.schema.properties.text.type, "string");
 	}
 });

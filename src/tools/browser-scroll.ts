@@ -1,6 +1,6 @@
 /** browser-scroll tool — scroll the page up or down. */
 
-import { defineTool } from "@deepseek-ai/dsh-tools";
+import { defineTool } from "../define-tool.js";
 import * as router from "../core/router.js";
 import { TEXT_OUTPUT, renderText, runInteraction } from "./common.js";
 

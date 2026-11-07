@@ -1,6 +1,6 @@
 /** web-learn tool — save or update a site navigation guide. */
 
-import { defineTool } from "@deepseek-ai/dsh-tools";
+import { defineTool } from "../define-tool.js";
 import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { ensureGuidesDir } from "../core/shared/paths.js";

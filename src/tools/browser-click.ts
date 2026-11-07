@@ -1,6 +1,6 @@
 /** browser-click tool — click an element by @e ref. */
 
-import { defineTool } from "@deepseek-ai/dsh-tools";
+import { defineTool } from "../define-tool.js";
 import * as router from "../core/router.js";
 import { TEXT_OUTPUT, joinLines, renderText, runInteraction } from "./common.js";
 

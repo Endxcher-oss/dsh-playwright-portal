@@ -1,6 +1,6 @@
 /** web-guide tool — read navigation guidance for a site or pattern. */
 
-import { defineTool } from "@deepseek-ai/dsh-tools";
+import { defineTool } from "../define-tool.js";
 import { formatGuideList, getGuideContent } from "../core/guides.js";
 import { TEXT_OUTPUT, renderText } from "./common.js";
 

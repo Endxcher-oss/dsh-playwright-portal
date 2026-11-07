@@ -2,7 +2,7 @@
  * browser-navigate tool — open a page as an accessibility tree with @e refs.
  */
 
-import { defineTool } from "@deepseek-ai/dsh-tools";
+import { defineTool } from "../define-tool.js";
 import * as router from "../core/router.js";
 import { formatGuideFooter, resolveApplicableGuides } from "../core/guides.js";
 import { getConfig } from "../config.js";

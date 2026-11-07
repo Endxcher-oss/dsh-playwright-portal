@@ -17,7 +17,7 @@ const result = await build({
 	format: "esm",
 	target: "node20",
 	outfile: "lib/index.js",
-	external: ["playwright", "playwright-core", "@deepseek-ai/dsh-tools"],
+	external: ["playwright", "playwright-core"],
 	legalComments: "inline",
 	logLevel: "warning",
 	metafile: true,
