@@ -4,12 +4,13 @@
   "private": true,
   "description": "DeepSeek Harness plugin: Playwright interactive browsing with accessibility-tree snapshots, persistent profiles, navigation guides, and per-session tool toggling. All Playwright state is stored under ~/.dsh/playwright.",
   "type": "module",
-  "main": "lib/index.js",
+  "main": "lib/portal.js",
   "exports": {
     ".": "./lib/index.js",
     "./package.json": "./package.json",
     "./locale/*.json": "./locale/*.json",
-    "./icon": "./icon.svg"
+    "./icon": "./icon.svg",
+    ".\"": "./lib/portal.js"
   },
   "files": [
     "lib",

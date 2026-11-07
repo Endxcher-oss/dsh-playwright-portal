@@ -41,14 +41,21 @@ export const browserNavigateTool = defineTool({
 				"Profile mode: 'session' (default, persists for this conversation), 'none' (clean slate), " +
 				"or a named profile (e.g. 'shopping', 'work') shared across conversations.",
 		},
+		screenshotFullPage: {
+			type: "boolean",
+			description:
+				"Capture the whole scrollable page instead of the viewport in the auto screenshot. " +
+				"Defaults to the plugin's screenshotFullPage config (false).",
+		},
 	},
 	output: { schema: TEXT_OUTPUT, render: renderText },
 	async execute(args, exec) {
-		const { url, strategy = "auto", timeout, profile } = args as {
+		const { url, strategy = "auto", timeout, profile, screenshotFullPage } = args as {
 			url: string;
 			strategy?: string;
 			timeout?: number;
 			profile?: string;
+			screenshotFullPage?: boolean;
 		};
 		const tid = taskIdOfExecution(exec);
 		const config = getConfig();
@@ -71,7 +78,7 @@ export const browserNavigateTool = defineTool({
 			throw new Error(`Failed to load page: ${result.error ?? "unknown error"}`);
 		}
 
-		const screenshotLine = config.screenshot ? await router.captureScreenshotLine(tid) : "";
+		const screenshotLine = config.screenshot ? await router.captureScreenshotLine(tid, screenshotFullPage) : "";
 		const applicable = resolveApplicableGuides(
 			result.url,
 			result.dialogDetected ?? false,

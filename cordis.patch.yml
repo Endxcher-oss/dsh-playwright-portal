@@ -17,6 +17,7 @@
 #   defaultLearn: false              # web-learn visible
 #   maxStorageStateSize: 10485760
 #   screenshot: true
+#   screenshotFullPage: false       # false = viewport, true = whole scrollable page
 #   timeoutSeconds: 30
 #   headless: true
 #

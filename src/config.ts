@@ -25,6 +25,8 @@ export interface PortalConfig {
 	defaultLearn: boolean;
 	maxStorageStateSize: number;
 	screenshot: boolean;
+	/** Capture the whole scrollable page instead of the viewport. */
+	screenshotFullPage: boolean;
 	timeoutSeconds: number;
 	headless: boolean;
 }
@@ -60,6 +62,7 @@ function defaultConfig(): PortalConfig {
 		defaultLearn: false,
 		maxStorageStateSize: 10 * 1024 * 1024,
 		screenshot: true,
+		screenshotFullPage: false,
 		timeoutSeconds: 30,
 		headless: true,
 	};
@@ -139,6 +142,7 @@ export function configure(raw: unknown): { config: PortalConfig; warnings: strin
 			["defaultEnabled", "defaultEnabled"],
 			["defaultLearn", "defaultLearn"],
 			["screenshot", "screenshot"],
+			["screenshotFullPage", "screenshotFullPage"],
 			["headless", "headless"],
 		] as const) {
 			const value = r[key];

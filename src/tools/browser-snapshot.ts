@@ -18,16 +18,25 @@ export const browserSnapshotTool = defineTool({
 			type: "boolean",
 			description: "If true, return the complete tree instead of the compact view (default: false)",
 		},
+		screenshotFullPage: {
+			type: "boolean",
+			description:
+				"Capture the whole scrollable page instead of the viewport in the auto screenshot. " +
+				"Defaults to the plugin's screenshotFullPage config (false).",
+		},
 	},
 	output: { schema: TEXT_OUTPUT, render: renderText },
 	async execute(args, exec) {
 		const tid = taskIdOfExecution(exec);
-		const full = Boolean((args as { full?: boolean }).full);
-		const result = await router.snapshot(tid, full);
+		const { full = false, screenshotFullPage } = args as {
+			full?: boolean;
+			screenshotFullPage?: boolean;
+		};
+		const result = await router.snapshot(tid, Boolean(full));
 		if (!result.success) {
 			throw new Error(`Snapshot failed: ${result.error ?? "unknown error"}`);
 		}
-		const screenshotLine = getConfig().screenshot ? await router.captureScreenshotLine(tid) : "";
+		const screenshotLine = getConfig().screenshot ? await router.captureScreenshotLine(tid, screenshotFullPage) : "";
 		return {
 			text: joinLines([screenshotLine, result.snapshot || "(empty page)"]),
 		};

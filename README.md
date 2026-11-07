@@ -30,7 +30,7 @@ No files are written to the Pi extension locations (`~/.pi/agent/pi-lean-portal`
 git clone https://github.com/Endxcher-oss/dsh-playwright-portal.git
 cd dsh-playwright-portal
 npm install --legacy-peer-deps   # playwright + bundler
-npm run build                    # produces lib/index.js
+npm run build                    # produces lib/portal.js
 ```
 
 Then install the bundle from its absolute directory with `plugin_manager` `install_bundle` (or the Plugin Manager page).
@@ -56,6 +56,7 @@ Optional row config (`cordis.patch.yml`):
         defaultEnabled: true                 # web tool family visible at start
         defaultLearn: false                  # web-learn visible
         screenshot: true
+        screenshotFullPage: false            # true = capture the whole scrollable page
         timeoutSeconds: 30
         headless: true
         maxStorageStateSize: 10485760
@@ -102,7 +103,7 @@ Profiles: `session` (default, persists for the conversation), `none` (ephemeral)
 ## Development
 
 ```bash
-npm run build   # esbuild bundle -> lib/index.js
+npm run build   # esbuild bundle -> lib/portal.js
 npm test        # node:test unit tests (no browser required)
 ```
 

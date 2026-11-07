@@ -61,6 +61,9 @@ test("config defaults place every path under $DSH_HOME/playwright", () => {
 	assert.deepEqual(config.engines, ["chromium", "firefox"]);
 	assert.equal(config.headless, true);
 	assert.equal(config.defaultProfile, "session");
+	assert.equal(config.screenshotFullPage, false);
+	assert.equal(config.screenshot, true);
+	assert.equal(config.screenshotFullPage, false);
 });
 
 test("config validation rejects bad values and keeps defaults", () => {
@@ -71,6 +74,7 @@ test("config validation rejects bad values and keeps defaults", () => {
 		maxStorageStateSize: -1,
 		timeoutSeconds: 999,
 		defaultProfile: "bad name!",
+		screenshotFullPage: "yes",
 	});
 	const config = getConfig();
 	assert.equal(config.dataDir, join(process.env.DSH_HOME!, "playwright"));
@@ -78,6 +82,7 @@ test("config validation rejects bad values and keeps defaults", () => {
 	assert.equal(config.maxStorageStateSize, 10 * 1024 * 1024);
 	assert.equal(config.timeoutSeconds, 30);
 	assert.equal(config.defaultProfile, "session");
+	assert.equal(config.screenshotFullPage, false);
 	assert.ok(warnings.some((warning) => warning.includes("dataDir")));
 	assert.ok(warnings.some((warning) => warning.includes("engines")));
 	assert.ok(warnings.some((warning) => warning.includes("maxStorageStateSize")));
@@ -259,4 +264,16 @@ test("/web install resolves the bundled Playwright CLI", () => {
 	assert.equal(existsSync(bundled.cliJs), true);
 	assert.match(bundled.cliJs, /playwright[/\\]cli\.js$/);
 	assert.deepEqual(detectInstalledBrowsers(), { chromium: false, firefox: false });
+});
+
+
+test("screenshotFullPage is configurable and exposed on screenshot-capturing tools", () => {
+	freshRoot();
+	configure({ screenshotFullPage: true });
+	assert.equal(getConfig().screenshotFullPage, true);
+
+	const navigate = toolDefinitions.find((tool) => tool.name === "browser-navigate") as any;
+	const snapshot = toolDefinitions.find((tool) => tool.name === "browser-snapshot") as any;
+	assert.equal(navigate.parameters.properties.screenshotFullPage.type, "boolean");
+	assert.equal(snapshot.parameters.properties.screenshotFullPage.type, "boolean");
 });

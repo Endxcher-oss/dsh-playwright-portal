@@ -16,7 +16,7 @@ const result = await build({
 	platform: "node",
 	format: "esm",
 	target: "node20",
-	outfile: "lib/index.js",
+	outfile: "lib/portal.js",
 	external: ["playwright", "playwright-core"],
 	legalComments: "inline",
 	logLevel: "warning",

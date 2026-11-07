@@ -715,13 +715,15 @@ export async function press(
  */
 export async function screenshotToTemp(
 	taskId?: string,
+	options?: { fullPage?: boolean },
 ): Promise<string | null> {
 	const resolved = await resolveSession(taskId);
 	if (!resolved) return null;
 
 	const { tid, plugin } = resolved;
+	const fullPage = options?.fullPage ?? getConfig().screenshotFullPage;
 	try {
-		const result = await plugin.screenshot(tid, { fullPage: false });
+		const result = await plugin.screenshot(tid, { fullPage });
 		if (!result.success || !result.dataUri) return null;
 
 		// Decode the base64 data URI
@@ -746,8 +748,11 @@ export async function screenshotToTemp(
  * The formatted line tells the LLM the screenshot is only current as of this
  * call and goes stale after any interaction tool (click/type/scroll/press/back).
  */
-export async function captureScreenshotLine(tid: string): Promise<string> {
-	const path = await screenshotToTemp(tid);
+export async function captureScreenshotLine(
+	tid: string,
+	fullPage?: boolean,
+): Promise<string> {
+	const path = await screenshotToTemp(tid, fullPage === undefined ? undefined : { fullPage });
 	if (!path) return "";
 	return (
 		`📷 Screenshot (current as of this call): ${path}` +
