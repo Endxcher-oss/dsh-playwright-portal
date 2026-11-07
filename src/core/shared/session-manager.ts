@@ -1,0 +1,214 @@
+import { getProfileLabel } from "./storage-state.js";
+
+/**
+ * Session manager — tracks browser session lifecycle per task_id.
+ *
+ * Design: sessions track metadata; browsers and contexts are managed
+ * entirely by the plugin. The session manager is Playwright-agnostic.
+ */
+
+/** Runtime state of a single browsing session */
+export interface BrowserSession {
+	taskId: string;
+	/** Name of the plugin this session is bound to (set once, never changes) */
+	pluginName: string;
+	/** The URL currently loaded in this session */
+	currentUrl?: string;
+	/** Page title if available */
+	currentTitle?: string;
+	/** Stable hash of the last snapshot's accessibility tree (for DOM-change detection) */
+	currentSnapshotFingerprint?: string;
+	/** Timestamp when element cache was last populated (for staleness detection) */
+	cachePopulatedAt?: number;
+	/** Timestamp of the last interaction that may have mutated the DOM */
+	lastInteractionAt?: number;
+	/** Whether the session has crashed and needs recovery */
+	crashed: boolean;
+	/** Whether to auto-save storage state on cleanup */
+	persistState?: boolean;
+	/** Profile name used for this session (undefined = default) */
+	profileName?: string;
+	/** DSH session ID for session-scoped profiles */
+	sessionId?: string;
+}
+
+/** Stored last navigation for a task (used to auto-recover sessions) */
+interface LastNavEntry {
+	url: string;
+	title: string;
+	/** Plugin name that was used for the original navigation */
+	pluginName: string;
+	/** Profile name active during this navigation (for restoring state on recovery) */
+	profileName?: string;
+}
+
+class SessionManager {
+	#sessions = new Map<string, BrowserSession>();
+	/** Last navigation URL per task (survives session removal, cleared explicitly) */
+	#lastNav = new Map<string, LastNavEntry>();
+
+	createSession(taskId: string, pluginName: string): BrowserSession {
+		const existing = this.#sessions.get(taskId);
+		if (existing) {
+			existing.pluginName = pluginName;
+			delete existing.currentUrl;
+			delete existing.currentTitle;
+			existing.crashed = false;
+			return existing;
+		}
+		const session: BrowserSession = {
+			taskId,
+			pluginName,
+			crashed: false,
+		};
+		this.#sessions.set(taskId, session);
+		return session;
+	}
+
+	getSession(taskId: string): BrowserSession | undefined {
+		return this.#sessions.get(taskId);
+	}
+
+	updateSession(
+		taskId: string,
+		updates: Partial<Omit<BrowserSession, "taskId">>,
+	): void {
+		const session = this.#sessions.get(taskId);
+		if (!session) return;
+		// ponytail: the `as any` is bounded by the Partial<Omit<BrowserSession, "taskId">>
+		// type above — only declared session fields can land here. Skip-undefined
+		// preserves existing fields (matches the prior per-field guards).
+		for (const [k, v] of Object.entries(updates)) {
+			if (v !== undefined) (session as any)[k] = v;
+		}
+	}
+
+	// ─── Last navigation storage (for session auto-recovery) ───
+
+	setLastNav(
+		taskId: string,
+		url: string,
+		title: string,
+		pluginName: string,
+		profileName?: string,
+	): void {
+		const entry: LastNavEntry = { url, title, pluginName };
+		if (profileName !== undefined) {
+			entry.profileName = profileName;
+		}
+		this.#lastNav.set(taskId, entry);
+	}
+
+	getLastNav(taskId: string): LastNavEntry | undefined {
+		return this.#lastNav.get(taskId);
+	}
+
+	// ─── Session lifecycle ────────────────────────────────────────────
+
+	removeSession(taskId: string): void {
+		this.#sessions.delete(taskId);
+		this.#lastNav.delete(taskId);
+	}
+
+	removeAll(): void {
+		this.#sessions.clear();
+		this.#lastNav.clear();
+	}
+
+	/**
+	 * Get a display symbol for a plugin name.
+	 * Known plugins get short symbols; unknown plugins get the first 3 chars.
+	 */
+	pluginSymbol(pluginName: string): string {
+		switch (pluginName) {
+			case "chromium":
+				return "PW";
+			case "firefox":
+				return "FF";
+			default:
+				// Return up to 3 uppercase chars for custom plugins
+				return pluginName.slice(0, 3).toUpperCase();
+		}
+	}
+
+	getStatus(): string {
+		const active = this.getActiveSessions();
+		const crashed = Array.from(this.#sessions.values()).filter((s) => s.crashed);
+
+		if (active.length === 0) {
+			if (crashed.length > 0) {
+				return `${crashed.length} crashed`;
+			}
+			return "idle";
+		}
+		if (active.length === 1) {
+			const s = active[0]!;
+			const domain = s.currentUrl ? extractDomain(s.currentUrl) : undefined;
+			const sym = this.pluginSymbol(s.pluginName);
+			const profileTag = s.profileName
+				? ` [${profileDisplayName(s.profileName)}]`
+				: "";
+			let status = domain
+				? `${sym}: ${domain}${profileTag}`
+				: `${sym}${profileTag}`;
+			if (crashed.length > 0) {
+				status += ` · ${crashed.length} crashed`;
+			}
+			return status;
+		}
+		// Multiple active sessions — group by profile
+		const byProfile = new Map<string, number>();
+		for (const s of active) {
+			const key = s.profileName ?? "ephemeral";
+			byProfile.set(key, (byProfile.get(key) ?? 0) + 1);
+		}
+		const profileParts = Array.from(byProfile.entries()).map(([name, count]) =>
+			count > 1
+				? `${profileDisplayName(name)}×${count}`
+				: profileDisplayName(name),
+		);
+		const sym = this.pluginSymbol(active[0]!.pluginName);
+		let status = `${active.length} active (${sym}): ${profileParts.join(", ")}`;
+		if (crashed.length > 0) {
+			status += ` · ${crashed.length} crashed`;
+		}
+		return status;
+	}
+
+	getActiveSessions(): BrowserSession[] {
+		return Array.from(this.#sessions.values()).filter(
+			(s) => s.currentUrl && !s.crashed,
+		);
+	}
+
+	/**
+	 * Find the task id for a given DSH session id (command handlers).
+	 */
+	getTaskIdForSession(sessionId: string): string | undefined {
+		for (const [taskId, session] of this.#sessions.entries()) {
+			if (session.sessionId === sessionId) return taskId;
+		}
+		return undefined;
+	}
+}
+
+/**
+ * Short display name for a profile in the TUI status bar.
+ * Session-scoped profiles render as a "📋 session" badge;
+ * named profiles show their name;
+ * "ephemeral" (no profile) label shows as-is.
+ */
+function profileDisplayName(name: string): string {
+	if (name === "ephemeral") return "ephemeral";
+	return getProfileLabel(name);
+}
+
+function extractDomain(url: string): string {
+	try {
+		return new URL(url).hostname;
+	} catch {
+		return url;
+	}
+}
+
+export const sessionManager = new SessionManager();

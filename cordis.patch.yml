@@ -1,0 +1,28 @@
+# playwright-portal — Playwright interactive browsing for DeepSeek Harness.
+#
+# Everything the plugin persists (browser binaries, profiles/cookies, guides,
+# screenshots and snapshot caches) lives under ~/.dsh/playwright by default:
+#   dataDir       $DSH_HOME/playwright
+#   browsersPath  <dataDir>/browsers  (PLAYWRIGHT_BROWSERS_PATH)
+#   browser-state/<profile>/storage-state.json
+#   web-guides/<domain>.md
+#   artifacts/
+#
+# Config overrides (all optional):
+#   dataDir: /absolute/path          # persistent root
+#   browsersPath: /absolute/path     # Playwright browser cache
+#   defaultProfile: session          # none | session | <name>
+#   engines: [chromium, firefox]     # built-in backends, first = strategy auto
+#   defaultEnabled: true             # web tool family visible at session start
+#   defaultLearn: false              # web-learn visible
+#   maxStorageStateSize: 10485760
+#   screenshot: true
+#   timeoutSeconds: 30
+#   headless: true
+#
+# After install, run /web install to download Chromium/Firefox binaries into
+# <dataDir>/browsers, then /web status to confirm the resolved paths.
+- insert:
+    - id: playwright-portal
+      name: dsh-playwright-portal
+      config: {}

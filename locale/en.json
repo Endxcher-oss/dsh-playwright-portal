@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Playwright portal",
+    "description": "Headless Playwright browsing with accessibility snapshots, persistent profiles, navigation guides, and per-session tool toggling. All Playwright state lives under ~/.dsh/playwright."
+  }
+}

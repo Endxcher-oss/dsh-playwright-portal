@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Playwright 浏览器",
+    "description": "基于 Playwright 的无头浏览器：可访问性快照、持久化配置、站点指南、按会话开关工具；所有 Playwright 数据保存在 ~/.dsh/playwright 下。"
+  }
+}

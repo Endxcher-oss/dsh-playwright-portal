@@ -1,0 +1,107 @@
+/**
+ * Browser Event Supervisor — handles JavaScript dialogs and browser events.
+ *
+ * Automatically dismisses alert/confirm/prompt dialogs and logs them
+ * for the user to see. Also handles page crash and unresponsive events.
+ *
+ * Playwright-generic — lives in core/shared so all Playwright-based
+ * backends (chromium, firefox, etc.) share the same handler logic.
+ */
+
+import type { Page } from "playwright";
+
+export interface DialogLogEntry {
+	type: "alert" | "confirm" | "prompt" | "beforeunload" | "crash";
+	message: string;
+	/** Default value for prompt dialogs */
+	defaultValue?: string;
+	/** How the dialog was handled; absent for non-dialog events like crash */
+	handledAs?: "accepted" | "dismissed";
+	timestamp: number;
+}
+
+export interface ConsoleEvent {
+	type: "log" | "warn" | "error" | "info" | "debug" | "dir" | "trace" | "assert";
+	text: string;
+	timestamp: number;
+}
+
+/** Dialogs logged per task, for reporting to user */
+const _dialogLog = new Map<string, DialogLogEntry[]>();
+
+/** Console messages logged per task */
+const _consoleLog = new Map<string, ConsoleEvent[]>();
+
+/** Get logged dialogs for a task */
+export function getDialogLog(taskId: string): DialogLogEntry[] {
+	return _dialogLog.get(taskId) ?? [];
+}
+
+/** Get console messages for a task */
+export function getConsoleLog(taskId: string): ConsoleEvent[] {
+	return _consoleLog.get(taskId) ?? [];
+}
+
+/** Clear dialog log for a task */
+export function clearDialogLog(taskId: string): void {
+	_dialogLog.delete(taskId);
+}
+
+/** Clear console log for a task */
+export function clearConsoleLog(taskId: string): void {
+	_consoleLog.delete(taskId);
+}
+
+/**
+ * Install dialog and console handlers on a Playwright page.
+ * Automatically accepts all dialogs (alert, confirm, prompt) and logs them.
+ * Captures console messages (log, warn, error, info, debug) for retrieval.
+ */
+export function installDialogHandlers(taskId: string, page: Page): void {
+	const dialogLog: DialogLogEntry[] = [];
+	_dialogLog.set(taskId, dialogLog);
+
+	const consoleLog: ConsoleEvent[] = [];
+	_consoleLog.set(taskId, consoleLog);
+
+	// Auto-accept JavaScript dialogs
+	page.on("dialog", async (dialog) => {
+		const entry: DialogLogEntry = {
+			type: dialog.type() as DialogLogEntry["type"],
+			message: dialog.message(),
+			defaultValue: dialog.defaultValue(),
+			handledAs: "accepted",
+			timestamp: Date.now(),
+		};
+
+		try {
+			await dialog.accept();
+		} catch {
+			entry.handledAs = "dismissed";
+		}
+
+		dialogLog.push(entry);
+	});
+
+	// Capture console messages
+	page.on("console", (msg) => {
+		const type = msg.type() as ConsoleEvent["type"];
+		if (consoleLog.length >= 500) {
+			consoleLog.shift(); // Ring buffer: keep latest 500
+		}
+		consoleLog.push({
+			type,
+			text: msg.text(),
+			timestamp: Date.now(),
+		});
+	});
+
+	// Handle page crashes
+	page.on("crash", () => {
+		dialogLog.push({
+			type: "crash",
+			message: "⚠ Page crashed",
+			timestamp: Date.now(),
+		});
+	});
+}
