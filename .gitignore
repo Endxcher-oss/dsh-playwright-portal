@@ -2,3 +2,5 @@ node_modules/
 .npm-cache/
 test/.build/
 *.tgz
+experiment/
+installed-backup.js

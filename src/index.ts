@@ -15,9 +15,6 @@ import { FirefoxPlugin } from "./backends/firefox/index.js";
 import { pluginRegistry } from "./core/plugin-registry.js";
 import { sessionManager } from "./core/shared/session-manager.js";
 import { configure, getConfig } from "./config.js";
-import { createRequire } from "node:module";
-import { writeFileSync } from "node:fs";
-import { join } from "node:path";
 import { configurePaths, dataDir, ensureDir } from "./core/shared/paths.js";
 import { cleanupFetchTempFiles } from "./core/fetch-backend.js";
 import { removeAllSnapshotFiles, removeSnapshotFiles } from "./core/shared/snapshot-cache.js";
@@ -74,39 +71,6 @@ export function apply(ctx: ApplyContextLike, rawConfig?: unknown): void {
 	const previousBrowsersPath = process.env.PLAYWRIGHT_BROWSERS_PATH;
 	process.env.PLAYWRIGHT_BROWSERS_PATH = getConfig().browsersPath;
 	ensureDir(dataDir());
-	// TEMP DIAGNOSTIC (removed after the launch failure is understood).
-	try {
-		const req = createRequire(import.meta.url);
-		const resolved = (() => {
-			try {
-				return req.resolve("playwright");
-			} catch (err) {
-				return `ERR: ${err instanceof Error ? err.message : String(err)}`;
-			}
-		})();
-		writeFileSync(
-			join(getConfig().dataDir, "diag.json"),
-			JSON.stringify(
-				{
-					execPath: process.execPath,
-					argv0: process.argv[0],
-					argv1: process.argv[1],
-					node: process.versions.node,
-					bun: process.versions.bun,
-					electron: process.versions.electron,
-					nodeOptions: process.env.NODE_OPTIONS,
-					playwrightNodejsPath: process.env.PLAYWRIGHT_NODEJS_PATH,
-					browsersPath: process.env.PLAYWRIGHT_BROWSERS_PATH,
-					resolvedPlaywright: resolved,
-					importMetaUrl: import.meta.url,
-				},
-				null,
-				2,
-			),
-		);
-	} catch {
-		/* best-effort */
-	}
 	for (const warning of loadToggleState()) ctx.logger?.warn?.(`[playwright-portal] ${warning}`);
 
 	registerBackends(ctx.logger);

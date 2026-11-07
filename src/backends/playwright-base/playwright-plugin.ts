@@ -33,8 +33,6 @@ import { join } from "node:path";
 import { mkdirSync } from "node:fs";
 import { persistSessionState } from "../../core/shared/storage-state.js";
 import { getConfig } from "../../config.js";
-import { writeFileSync } from "node:fs";
-import { dataDir } from "../../core/shared/paths.js";
 import type {
 	BrowserPlugin,
 	PluginCapabilities,
@@ -590,14 +588,6 @@ export abstract class PlaywrightPluginBase implements BrowserPlugin {
 				dialogEvents,
 			};
 		} catch (err: unknown) {
-			try {
-				writeFileSync(
-					dataDir() + "/last-error.txt",
-					String(err instanceof Error ? (err.stack ?? err.message) : err),
-				);
-			} catch {
-				/* diagnostic only */
-			}
 			const msg = err instanceof Error ? err.message : String(err);
 
 			// Try to check page content even on error — challenge pages may have
