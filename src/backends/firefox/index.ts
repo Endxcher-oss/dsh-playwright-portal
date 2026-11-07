@@ -14,6 +14,7 @@
 
 import type { Browser } from "playwright";
 import { getConfig } from "../../config.js";
+import { playwrightRuntime } from "../../playwright-runtime.js";
 import { browsersPath } from "../../core/shared/paths.js";
 import { PlaywrightPluginBase } from "../playwright-base/playwright-plugin.js";
 import {
@@ -51,7 +52,7 @@ export class FirefoxPlugin extends PlaywrightPluginBase {
 	}
 
 	protected async launchBrowser(): Promise<Browser> {
-		const { firefox } = await import("playwright");
+		const { firefox } = playwrightRuntime();
 		return firefox.launch({ headless: getConfig().headless });
 	}
 

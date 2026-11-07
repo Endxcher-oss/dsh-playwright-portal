@@ -10,6 +10,7 @@
 
 import type { Browser } from "playwright";
 import { getConfig } from "../../config.js";
+import { playwrightRuntime } from "../../playwright-runtime.js";
 import { browsersPath } from "../../core/shared/paths.js";
 import { PlaywrightPluginBase } from "../playwright-base/playwright-plugin.js";
 import { DEFAULT_CAPABILITIES } from "../../core/plugin-api.js";
@@ -24,9 +25,8 @@ export class ChromiumPlugin extends PlaywrightPluginBase {
 	}
 
 	protected async launchBrowser(): Promise<Browser> {
-		// Imported lazily so a missing playwright package only breaks browser
-		// launch, not plugin activation.
-		const { chromium } = await import("playwright");
+		// Loaded lazily via CommonJS inside the runtime accessor.
+		const { chromium } = playwrightRuntime();
 		return chromium.launch({
 			headless: getConfig().headless,
 			args: [

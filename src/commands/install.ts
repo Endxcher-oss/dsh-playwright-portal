@@ -8,8 +8,8 @@
 
 import { spawn } from "node:child_process";
 import { existsSync, readdirSync } from "node:fs";
-import { createRequire } from "node:module";
 import { basename, dirname, join } from "node:path";
+import { createRequire } from "node:module";
 import { browsersPath } from "../core/shared/paths.js";
 
 export const ENGINES = ["chromium", "firefox"] as const;
